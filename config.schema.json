@@ -1,0 +1,50 @@
+{
+  "pluginAlias": "RaymotePlatform",
+  "pluginType": "platform",
+  "headerDisplay": "Raymote (Raypak) Heater Configuration\n\nEnter your Raymote token and optional settings below.",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "title": "Name",
+        "type": "string",
+        "default": "Raymote Pool Heater",
+        "description": "The name of the accessory as it will appear in HomeKit."
+      },
+      "token": {
+        "title": "Raymote Token",
+        "type": "string",
+        "required": true,
+        "placeholder": "token_abcdef123456",
+        "description": "Your Raymote API token (keep secret)."
+      },
+      "baseUrl": {
+        "title": "API Base URL",
+        "type": "string",
+        "default": "https://raymote.raypak.com/external/api",
+        "description": "Raymote API base URL."
+      },
+      "pollInterval": {
+        "title": "Poll Interval (seconds)",
+        "type": "integer",
+        "default": 30,
+        "minimum": 5,
+        "description": "How often to poll the Raymote API."
+      }
+    }
+  },
+  "layout": [
+    {
+      "type": "help",
+      "helpvalue": "<h4>General Settings</h4>"
+    },
+    "name",
+    "token",
+    {
+      "type": "help",
+      "helpvalue": "<h4>Advanced</h4>"
+    },
+    "baseUrl",
+    "pollInterval"
+  ]
+}
