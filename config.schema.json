@@ -42,7 +42,10 @@
   "layout": [
     "name",
     "username",
-    "password",
+    {
+      "key": "password",
+      "type": "password"
+    },
     {
       "type": "fieldset",
       "title": "Advanced Options",
