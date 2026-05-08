@@ -94,7 +94,7 @@ class RaymotePlatform {
       inlet1: safeFloat(data.v3),
       inlet2: safeFloat(data.v4),
       setpoint: safeFloat(data.v41),
-      heaterOn: (data.v54 !== undefined) ? (String(data.v54) === '1' || String(data.v54).toLowerCase() === 'true') : false
+      heaterOn: (data.v53 !== undefined) ? (String(data.v53) === '1' || String(data.v53).toLowerCase() === 'true') : false
     };
 
     this.cache = mapped;
