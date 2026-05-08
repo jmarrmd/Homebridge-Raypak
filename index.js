@@ -121,8 +121,13 @@ class RaymotePlatform {
       .setCharacteristic(Characteristic.Model, 'Raymote Heater')
       .setCharacteristic(Characteristic.SerialNumber, uuid.substring(0, 8));
 
-    const thermostatService = accessory.addService(Service.Thermostat, name, 'THERMOSTAT');
-    const switchService = accessory.addService(Service.Switch, name + ' Power', 'POWER_SWITCH');
+    const thermostatService = accessory.getService(Service.Thermostat) || accessory.addService(Service.Thermostat, name, 'THERMOSTAT');
+
+    // Remove legacy Switch service if it exists on cached accessories
+    const legacySwitch = accessory.getService(Service.Switch);
+    if (legacySwitch) {
+      accessory.removeService(legacySwitch);
+    }
 
     // --- Thermostat Service Logic ---
     thermostatService.getCharacteristic(Characteristic.CurrentTemperature)
@@ -171,7 +176,6 @@ class RaymotePlatform {
             const desiredOn = (value === Characteristic.TargetHeatingCoolingState.OFF) ? false : true;
             await this.setHeater(desiredOn);
             this.cache.heaterOn = desiredOn;
-            switchService.updateCharacteristic(Characteristic.On, desiredOn);
             cb(null);
         } catch (e) {
             cb(e);
@@ -180,23 +184,6 @@ class RaymotePlatform {
 
     thermostatService.getCharacteristic(Characteristic.TemperatureDisplayUnits)
       .on('get', (cb) => cb(null, Characteristic.TemperatureDisplayUnits.FAHRENHEIT));
-
-
-    // --- Switch Service Logic ---
-    switchService.getCharacteristic(Characteristic.On)
-      .on('get', (cb) => cb(null, this.cache.heaterOn))
-      .on('set', async (value, cb) => {
-        try {
-          await this.setHeater(value);
-          this.cache.heaterOn = value;
-          const targetMode = value ? Characteristic.TargetHeatingCoolingState.HEAT : Characteristic.TargetHeatingCoolingState.OFF;
-          thermostatService.updateCharacteristic(Characteristic.TargetHeatingCoolingState, targetMode);
-          thermostatService.updateCharacteristic(Characteristic.CurrentHeatingCoolingState, targetMode);
-          cb(null);
-        } catch (e) {
-          cb(e);
-        }
-      });
       
     return accessory;
   }
@@ -206,7 +193,6 @@ class RaymotePlatform {
       if (!accessory) return;
       
       const t = accessory.getService(Service.Thermostat);
-      const s = accessory.getService(Service.Switch);
 
       if (t) {
         const currentTempF = mapped.inlet1 || mapped.inlet2 || 0;
@@ -219,10 +205,6 @@ class RaymotePlatform {
         
         const targetMode = mapped.heaterOn ? Characteristic.TargetHeatingCoolingState.HEAT : Characteristic.TargetHeatingCoolingState.OFF;
         t.updateCharacteristic(Characteristic.TargetHeatingCoolingState, targetMode);
-      }
-      
-      if (s) {
-        s.updateCharacteristic(Characteristic.On, !!mapped.heaterOn);
       }
     } catch (e) {
       this.log.error('Error updating accessory values:', e.message);
