@@ -94,7 +94,8 @@ class RaymotePlatform {
       inlet1: safeFloat(data.v3),
       inlet2: safeFloat(data.v4),
       setpoint: safeFloat(data.v41),
-      heaterOn: (data.v53 !== undefined) ? (String(data.v53) === '1' || String(data.v53).toLowerCase() === 'true') : false
+      heaterOn: (data.v53 !== undefined) ? (String(data.v53) === '1' || String(data.v53).toLowerCase() === 'true') : false,
+      heaterFiring: (data.v54 !== undefined) ? (String(data.v54) === '1' || String(data.v54).toLowerCase() === 'true') : false
     };
 
     this.cache = mapped;
@@ -153,8 +154,8 @@ class RaymotePlatform {
 
     thermostatService.getCharacteristic(Characteristic.CurrentHeatingCoolingState)
       .on('get', (cb) => {
-        const on = !!this.cache.heaterOn;
-        cb(null, on ? Characteristic.CurrentHeatingCoolingState.HEAT : Characteristic.CurrentHeatingCoolingState.OFF);
+        const firing = !!this.cache.heaterFiring;
+        cb(null, firing ? Characteristic.CurrentHeatingCoolingState.HEAT : Characteristic.CurrentHeatingCoolingState.OFF);
       });
 
     thermostatService.getCharacteristic(Characteristic.TargetHeatingCoolingState)
@@ -176,6 +177,12 @@ class RaymotePlatform {
             const desiredOn = (value === Characteristic.TargetHeatingCoolingState.OFF) ? false : true;
             await this.setHeater(desiredOn);
             this.cache.heaterOn = desiredOn;
+            
+            // If turning off, instantly reflect that it is no longer firing
+            if (!desiredOn) {
+               this.cache.heaterFiring = false;
+               thermostatService.updateCharacteristic(Characteristic.CurrentHeatingCoolingState, Characteristic.CurrentHeatingCoolingState.OFF);
+            }
             cb(null);
         } catch (e) {
             cb(e);
@@ -200,7 +207,7 @@ class RaymotePlatform {
         
         t.updateCharacteristic(Characteristic.TargetTemperature, FtoC(mapped.setpoint || 80));
         
-        const mode = mapped.heaterOn ? Characteristic.CurrentHeatingCoolingState.HEAT : Characteristic.CurrentHeatingCoolingState.OFF;
+        const mode = mapped.heaterFiring ? Characteristic.CurrentHeatingCoolingState.HEAT : Characteristic.CurrentHeatingCoolingState.OFF;
         t.updateCharacteristic(Characteristic.CurrentHeatingCoolingState, mode);
         
         const targetMode = mapped.heaterOn ? Characteristic.TargetHeatingCoolingState.HEAT : Characteristic.TargetHeatingCoolingState.OFF;
