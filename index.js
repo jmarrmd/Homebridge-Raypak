@@ -95,8 +95,19 @@ class RaymotePlatform {
       inlet2: safeFloat(data.v4),
       setpoint: safeFloat(data.v41),
       heaterOn: (data.v53 !== undefined) ? (String(data.v53) === '1' || String(data.v53).toLowerCase() === 'true') : false,
-      heaterFiring: (data.v54 !== undefined) ? (String(data.v54) === '1' || String(data.v54).toLowerCase() === 'true') : false
     };
+    
+    const currentTemp = mapped.inlet1 || mapped.inlet2 || 0;
+    
+    // Determine actively firing state:
+    // First try to see if v54 explicitly tells us it's firing
+    let isFiring = (data.v54 !== undefined) ? (String(data.v54) === '1' || String(data.v54).toLowerCase() === 'true') : false;
+    // Fallback: If it is ON, and current temp is below setpoint, it should be firing.
+    if (!isFiring && mapped.heaterOn && currentTemp < mapped.setpoint) {
+        isFiring = true;
+    }
+    
+    mapped.heaterFiring = isFiring;
 
     this.cache = mapped;
 
