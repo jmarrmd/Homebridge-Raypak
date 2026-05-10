@@ -70,7 +70,6 @@ class RaymotePlatform {
     const url = `${this.baseUrl}/getAll?token=${encodeURIComponent(this.token)}`;
     try {
       const res = await axios.get(url, { timeout: 8000 }); 
-      this.log.warn('DEBUG API PAYLOAD: ' + JSON.stringify(res.data));
       return res.data;
     } catch (err) {
       this.log.debug('Error fetching Raymote data:', err.message); 
@@ -98,7 +97,7 @@ class RaymotePlatform {
       heaterOn: (data.v53 !== undefined) ? (String(data.v53) === '1' || String(data.v53).toLowerCase() === 'true') : false,
     };
     
-    mapped.heaterFiring = (data.v54 !== undefined) ? (String(data.v54) === '1' || String(data.v54).toLowerCase() === 'true') : false;
+    mapped.heaterFiring = (data.v55 !== undefined) ? (String(data.v55).toLowerCase() === 'heating') : false;
 
     this.cache = mapped;
 
