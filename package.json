@@ -1,6 +1,6 @@
 {
   "name": "homebridge-raymote",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Homebridge plugin to monitor and control Raypak heaters via the Raymote API.",
   "main": "index.js",
   "keywords": [
